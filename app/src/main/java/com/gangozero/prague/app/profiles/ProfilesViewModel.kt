@@ -1,18 +1,31 @@
 package com.gangozero.prague.app.profiles
 
+import android.util.Log
 import com.gangozero.prague.app.core.Schedulers
 import com.gangozero.prague.app.core.UseCase
+import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.functions.Function
 
 class ProfilesViewModel(
         private val getProfiles: UseCase<Unit, List<Profile>>,
-        private val submitGradeCase: UseCase<Grade, Unit>,
+        private val submitGradeCase: UseCase<Boolean, Unit>,
         private val schedulers: Schedulers
 ) {
 
-    fun submitGrade(profileId: String, like: Boolean) {
-        submitGradeCase.get(Grade(profileId, "", if (like) 1 else -1, 1.0, 1.0))
+    fun submitGrade(
+            like: Boolean
+    ) {
+        Completable.fromAction { submitGradeCase.get(like) }
+                .subscribeOn(schedulers.background())
+                .observeOn(schedulers.ui())
+                .subscribe({
+                    Log.d("grade", "ok")
+                }, {
+                    Log.d("grade", "error")
+                    it.printStackTrace()
+                })
+
     }
 
     fun profiles(): Observable<State> {
@@ -27,8 +40,6 @@ class ProfilesViewModel(
                 })
         )
     }
-
-    //Observable.just(State.Error(it))
 
     private fun getProfiles(): Observable<State> {
         return Observable.fromCallable { State.Success(getProfiles.get(Unit)) }

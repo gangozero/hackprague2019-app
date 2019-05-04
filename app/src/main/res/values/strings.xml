@@ -3,8 +3,10 @@
     <string name="ok">Ok</string>
     <string name="not_ok">Not Ok</string>
     <string name="title_activity_maps">Map</string>
-    <string name="notification_title">Prague 2019</string>
-    <string name="notification_message">BLE Service</string>
+    <string name="notification_ble_title">Prague 2019</string>
+    <string name="notification_ble_message">BLE Service</string>
+    <string name="notification_loc_title">Prague 2019</string>
+    <string name="notification_loc_message">Location Service</string>
     <string name="retry">Retry</string>
     <string name="error">Sorry, error.</string>
 </resources>

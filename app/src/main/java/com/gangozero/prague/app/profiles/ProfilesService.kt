@@ -1,5 +1,6 @@
 package com.gangozero.prague.app.profiles
 
+import android.util.Log
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -21,8 +22,14 @@ class ProfilesService {
         service = retrofit.create(Api::class.java)
     }
 
-    fun submitOpinion(grade: Grade) {
-        //service.postGrade(profileId, Grade(userId, if (like) 1 else -1, lat, lon)).execute()
+    fun submitOpinion(profileId: String,
+                      userId: String,
+                      like: Boolean,
+                      lat: Double,
+                      lon: Double) {
+
+        val response = service.postGrade(profileId, Grade(userId, if (like) 1 else -1, lat, lon)).execute()
+        Log.d("grade", "resp: $response")
     }
 
     fun getProfiles(): List<Profile> {
@@ -41,9 +48,9 @@ class ProfilesService {
         @GET("/api/v1/profile")
         fun getProfiles(): Call<List<Profile>>
 
-        @POST("/grade/{profileId}")
-        fun postGrade(@Path("profileId") profileId: String, @Body gradle: Grade): Call<Response>
+        @POST("/api/v1/grade/{profileId}")
+        fun postGrade(@Path("profileId") profileId: String, @Body gradle: Grade): Call<Unit>
     }
 
-    data class Response(val message: String)
+    class Response
 }

@@ -11,9 +11,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.gangozero.prague.app.R
+import com.gangozero.prague.app.core.App
 import com.gangozero.prague.app.core.Schedulers
 import com.gangozero.prague.app.profiles.usecases.GetProfiles
-import com.gangozero.prague.app.profiles.usecases.SubmitGrade
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 
@@ -23,8 +23,7 @@ class ProfilesFragment : Fragment() {
     lateinit var mapView: MapView
     var map: GoogleMap? = null
 
-    private val profilesService = ProfilesService()
-    private val viewModel = ProfilesViewModel(GetProfiles(profilesService), SubmitGrade(profilesService), Schedulers())
+    lateinit var viewModel:ProfilesViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -62,9 +61,14 @@ class ProfilesFragment : Fragment() {
         mapView = view.findViewById(R.id.map_view)
         mapView.onCreate(savedInstanceState)
 
-        view.findViewById<View>(R.id.btn_retry).setOnClickListener {
-            loadProfiles(view)
-        }
+        val profilesService = (context!!.applicationContext as App).profilesService
+        viewModel = ProfilesViewModel(
+                GetProfiles(profilesService),
+                (context!!.applicationContext as App).createSubmitGrade(),
+                Schedulers()
+        )
+
+        view.findViewById<View>(R.id.btn_retry).setOnClickListener { loadProfiles(view) }
 
         loadProfiles(view)
     }
@@ -85,6 +89,8 @@ class ProfilesFragment : Fragment() {
                 }
                 is State.Success -> {
 
+                    (context!!.applicationContext as App).selectedProfile = it.profiles[0]
+
                     view.findViewById<View>(R.id.error_container).visibility = View.GONE
                     view.findViewById<View>(R.id.data_view).visibility = View.VISIBLE
                     view.findViewById<View>(R.id.progress_view).visibility = View.GONE
@@ -92,7 +98,14 @@ class ProfilesFragment : Fragment() {
                     val viewPager = view.findViewById<ViewPager>(R.id.view_pager)
 
                     viewPager.adapter = ProfilesPagerAdapter(it.profiles) { id, like ->
-                        viewModel.submitGrade(id, like)
+
+                        val locManager = (context!!.applicationContext as App).locationManager
+
+                        val lastLocation = locManager.lastLocation
+                        if (lastLocation != null) {
+                            viewModel.submitGrade(like)
+                        }
+
                     }
 
                     mapView.getMapAsync {
@@ -104,8 +117,7 @@ class ProfilesFragment : Fragment() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
-                                            grantResults: IntArray) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             1000 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -120,12 +132,12 @@ class ProfilesFragment : Fragment() {
 
 
     private fun enableMyLocationIfPermitted() {
-        if (ContextCompat.checkSelfPermission(context!!,
-                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity!!,
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION),
                     1000)
         } else if (map != null) {
+            (context!!.applicationContext as App).locationManager.init()
             map!!.isMyLocationEnabled = true
         }
     }

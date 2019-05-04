@@ -14,6 +14,8 @@ object NotificationUtils {
             channelId: String,
             channelName: String,
             notificationId: Int,
+            title:Int,
+            message:Int,
             context: Service
     ) {
 
@@ -29,8 +31,8 @@ object NotificationUtils {
                 }
 
         val notification: Notification = Notification.Builder(context, channelId)
-                .setContentTitle(context.getText(R.string.notification_title))
-                .setContentText(context.getText(R.string.notification_message))
+                .setContentTitle(context.getText(title))
+                .setContentText(context.getText(message))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setAutoCancel(false)
                 .setContentIntent(pendingIntent)

@@ -5,9 +5,14 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.util.Log
+import com.gangozero.prague.app.core.App
+import com.gangozero.prague.app.core.Schedulers
+import io.reactivex.Completable
 import java.util.*
 
-class BleConnection(val context: Context) {
+class BleConnection(
+        private val context: Context
+) {
 
     val BUTTON_SERVICE = UUID.fromString("e95d9882-251d-470a-a062-fa1922dfa9a8")
     val BUTTON_SERVICE_CHAR_A = UUID.fromString("e95dda90-251d-470a-a062-fa1922dfa9a8")
@@ -20,7 +25,7 @@ class BleConnection(val context: Context) {
     var subToB = false
     var callback: ScanCallback? = null
 
-    fun init(){
+    fun init() {
         startBluetooth()
         callback = newCallback()
         BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner.startScan(callback)
@@ -36,7 +41,7 @@ class BleConnection(val context: Context) {
         return object : ScanCallback() {
 
             override fun onScanFailed(errorCode: Int) {
-
+                Log.d("gatt", "scan failed: $errorCode")
             }
 
             override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -112,9 +117,9 @@ class BleConnection(val context: Context) {
                     val uuid = characteristic.uuid
 
                     if (uuid == BUTTON_SERVICE_CHAR_A) {
-                        Log.d("gatt", "dislike")
+                        submit(false)
                     } else if (uuid == BUTTON_SERVICE_CHAR_B) {
-                        Log.d("gatt", "like")
+                        submit(true)
                     }
                 }
             }
@@ -141,6 +146,21 @@ class BleConnection(val context: Context) {
                 Log.d("gatt", "onReliableWriteCompleted: $status")
             }
         })
+    }
+
+    private fun submit(like: Boolean) {
+
+        val createSubmitGrade = (context.applicationContext as App).createSubmitGrade()
+        val schedulers = Schedulers()
+
+        Completable.fromAction { createSubmitGrade.get(like) }
+                .subscribeOn(schedulers.background())
+                .observeOn(schedulers.ui())
+                .subscribe({
+
+                }, {
+                    it.printStackTrace()
+                })
     }
 
     fun setCharacteristicNotification(service: UUID,
