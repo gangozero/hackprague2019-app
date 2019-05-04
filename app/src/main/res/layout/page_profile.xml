@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/text_profile_name"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textSize="24sp"
+        tools:text="@tools:sample/lorem"
+        android:layout_margin="24dp"
+        android:textColor="@color/black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+
+        <Button
+            android:id="@+id/btn_ok"
+            android:layout_weight="1"
+            android:text="@string/ok"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"/>
+
+        <Button
+            android:id="@+id/btn_not_ok"
+            android:layout_weight="1"
+            android:text="@string/not_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>
