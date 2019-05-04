@@ -8,7 +8,10 @@ import android.widget.TextView
 import com.gangozero.prague.app.R
 
 
-class ProfilesPagerAdapter(profiles: List<Profile>) : PagerAdapter() {
+class ProfilesPagerAdapter(
+        profiles: List<Profile>,
+        val likeHandler: (id: String, like: Boolean) -> Unit
+) : PagerAdapter() {
 
     val profiles = profiles.toMutableList()
 
@@ -20,6 +23,14 @@ class ProfilesPagerAdapter(profiles: List<Profile>) : PagerAdapter() {
 
 
         val textProfileName = page.findViewById<TextView>(R.id.text_profile_name)
+
+        page.findViewById<View>(R.id.btn_ok).setOnClickListener {
+            likeHandler(profile.id, true)
+        }
+
+        page.findViewById<View>(R.id.btn_not_ok).setOnClickListener {
+            likeHandler(profile.id, false)
+        }
 
         textProfileName.text = profile.name
 

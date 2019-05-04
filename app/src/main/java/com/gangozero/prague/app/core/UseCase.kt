@@ -1,5 +1,5 @@
 package com.gangozero.prague.app.core
 
-interface UseCase<T> {
-    fun get(): T
+interface UseCase<In, Out> {
+    fun get(input: In): Out
 }

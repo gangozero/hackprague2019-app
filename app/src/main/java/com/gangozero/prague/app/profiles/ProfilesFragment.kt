@@ -12,6 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.gangozero.prague.app.R
 import com.gangozero.prague.app.core.Schedulers
+import com.gangozero.prague.app.profiles.usecases.GetProfiles
+import com.gangozero.prague.app.profiles.usecases.SubmitGrade
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 
@@ -31,12 +33,16 @@ class ProfilesFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         mapView.onResume()
-//        enableMyLocationIfPermitted()
     }
 
     override fun onStop() {
         mapView.onStop()
         super.onStop()
+    }
+
+    override fun onStart() {
+        mapView.onStart()
+        super.onStart()
     }
 
     override fun onPause() {
@@ -51,10 +57,12 @@ class ProfilesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
+
         mapView = view.findViewById(R.id.map_view)
         mapView.onCreate(savedInstanceState)
 
-        val viewModel = ProfilesViewModel(GetProfiles(ProfilesService()), Schedulers())
+        val profilesService = ProfilesService()
+        val viewModel = ProfilesViewModel(GetProfiles(profilesService), SubmitGrade(profilesService), Schedulers())
         viewModel.profiles().subscribe {
 
             if (it is State.Loading) {
@@ -69,8 +77,10 @@ class ProfilesFragment : Fragment() {
                 view.findViewById<View>(R.id.progress_view).visibility = View.GONE
 
                 val viewPager = view.findViewById<ViewPager>(R.id.view_pager)
-                viewPager.adapter = ProfilesPagerAdapter(it.profiles)
 
+                viewPager.adapter = ProfilesPagerAdapter(it.profiles) { id, like ->
+                    viewModel.submitGrade(id, like)
+                }
 
                 mapView.getMapAsync {
                     map = it
@@ -78,8 +88,6 @@ class ProfilesFragment : Fragment() {
                 }
             }
         }
-
-
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
