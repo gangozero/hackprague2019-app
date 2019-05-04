@@ -23,6 +23,9 @@ class ProfilesFragment : Fragment() {
     lateinit var mapView: MapView
     var map: GoogleMap? = null
 
+    private val profilesService = ProfilesService()
+    private val viewModel = ProfilesViewModel(GetProfiles(profilesService), SubmitGrade(profilesService), Schedulers())
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_profiles, container, false)
@@ -56,35 +59,46 @@ class ProfilesFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-
         mapView = view.findViewById(R.id.map_view)
         mapView.onCreate(savedInstanceState)
 
-        val profilesService = ProfilesService()
-        val viewModel = ProfilesViewModel(GetProfiles(profilesService), SubmitGrade(profilesService), Schedulers())
+        view.findViewById<View>(R.id.btn_retry).setOnClickListener {
+            loadProfiles(view)
+        }
+
+        loadProfiles(view)
+    }
+
+    private fun loadProfiles(view: View) {
         viewModel.profiles().subscribe {
 
-            if (it is State.Loading) {
-                view.findViewById<View>(R.id.data_view).visibility = View.GONE
-                view.findViewById<View>(R.id.progress_view).visibility = View.VISIBLE
-            } else if (it is State.Error) {
-                view.findViewById<View>(R.id.data_view).visibility = View.GONE
-                view.findViewById<View>(R.id.progress_view).visibility = View.GONE
-            } else if (it is State.Success) {
-
-                view.findViewById<View>(R.id.data_view).visibility = View.VISIBLE
-                view.findViewById<View>(R.id.progress_view).visibility = View.GONE
-
-                val viewPager = view.findViewById<ViewPager>(R.id.view_pager)
-
-                viewPager.adapter = ProfilesPagerAdapter(it.profiles) { id, like ->
-                    viewModel.submitGrade(id, like)
+            when (it) {
+                is State.Loading -> {
+                    view.findViewById<View>(R.id.data_view).visibility = View.GONE
+                    view.findViewById<View>(R.id.error_container).visibility = View.GONE
+                    view.findViewById<View>(R.id.progress_view).visibility = View.VISIBLE
                 }
+                is State.Error -> {
+                    view.findViewById<View>(R.id.data_view).visibility = View.GONE
+                    view.findViewById<View>(R.id.error_container).visibility = View.VISIBLE
+                    view.findViewById<View>(R.id.progress_view).visibility = View.GONE
+                }
+                is State.Success -> {
 
-                mapView.getMapAsync {
-                    map = it
-                    enableMyLocationIfPermitted()
+                    view.findViewById<View>(R.id.error_container).visibility = View.GONE
+                    view.findViewById<View>(R.id.data_view).visibility = View.VISIBLE
+                    view.findViewById<View>(R.id.progress_view).visibility = View.GONE
+
+                    val viewPager = view.findViewById<ViewPager>(R.id.view_pager)
+
+                    viewPager.adapter = ProfilesPagerAdapter(it.profiles) { id, like ->
+                        viewModel.submitGrade(id, like)
+                    }
+
+                    mapView.getMapAsync {
+                        map = it
+                        enableMyLocationIfPermitted()
+                    }
                 }
             }
         }

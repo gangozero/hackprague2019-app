@@ -14,30 +14,31 @@ class ProfilesService {
 
     init {
         val retrofit = Retrofit.Builder()
-                .baseUrl("https://api.github.com/")
+                .baseUrl("https://backend-j5xvupqgfq-uc.a.run.app/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
 
         service = retrofit.create(Api::class.java)
     }
 
-    fun submitOpinion(grade:Grade) {
+    fun submitOpinion(grade: Grade) {
         //service.postGrade(profileId, Grade(userId, if (like) 1 else -1, lat, lon)).execute()
     }
 
     fun getProfiles(): List<Profile> {
 
-//        service.getProfiles().execute().body()
+        val profiles = service.getProfiles()
+        val execute = profiles.execute()
 
-        Thread.sleep(1000)
-        return listOf(
-                Profile("wheel-chair", "1"),
-                Profile("blind", "2")
-        )
+        if (execute.isSuccessful && execute.code() == 200) {
+            return execute.body()!!
+        } else {
+            throw RuntimeException("Network Error: ${execute.code()}, ${execute.message()}")
+        }
     }
 
     interface Api {
-        @GET("/profile")
+        @GET("/api/v1/profile")
         fun getProfiles(): Call<List<Profile>>
 
         @POST("/grade/{profileId}")

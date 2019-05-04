@@ -5,4 +5,6 @@
     <string name="title_activity_maps">Map</string>
     <string name="notification_title">Prague 2019</string>
     <string name="notification_message">BLE Service</string>
+    <string name="retry">Retry</string>
+    <string name="error">Sorry, error.</string>
 </resources>
