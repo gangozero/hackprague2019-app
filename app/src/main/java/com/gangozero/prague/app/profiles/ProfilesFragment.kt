@@ -23,7 +23,7 @@ class ProfilesFragment : Fragment() {
     lateinit var mapView: MapView
     var map: GoogleMap? = null
 
-    lateinit var viewModel:ProfilesViewModel
+    lateinit var viewModel: ProfilesViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -74,6 +74,9 @@ class ProfilesFragment : Fragment() {
     }
 
     private fun loadProfiles(view: View) {
+
+        val app = context!!.applicationContext as App
+
         viewModel.profiles().subscribe {
 
             when (it) {
@@ -89,7 +92,8 @@ class ProfilesFragment : Fragment() {
                 }
                 is State.Success -> {
 
-                    (context!!.applicationContext as App).selectedProfile = it.profiles[0]
+
+                    app.selectedProfile = it.profiles[0]
 
                     view.findViewById<View>(R.id.error_container).visibility = View.GONE
                     view.findViewById<View>(R.id.data_view).visibility = View.VISIBLE
@@ -99,7 +103,7 @@ class ProfilesFragment : Fragment() {
 
                     viewPager.adapter = ProfilesPagerAdapter(it.profiles) { id, like ->
 
-                        val locManager = (context!!.applicationContext as App).locationManager
+                        val locManager = app.locationManager
 
                         val lastLocation = locManager.lastLocation
                         if (lastLocation != null) {
@@ -107,6 +111,21 @@ class ProfilesFragment : Fragment() {
                         }
 
                     }
+
+                    viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+                        override fun onPageScrollStateChanged(p0: Int) {
+
+                        }
+
+                        override fun onPageScrolled(p0: Int, p1: Float, p2: Int) {
+
+                        }
+
+                        override fun onPageSelected(page: Int) {
+                            app.selectedProfile = it.profiles[page]
+                        }
+
+                    })
 
                     mapView.getMapAsync {
                         map = it
