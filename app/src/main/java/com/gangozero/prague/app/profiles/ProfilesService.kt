@@ -38,7 +38,7 @@ class ProfilesService {
         val execute = profiles.execute()
 
         if (execute.isSuccessful && execute.code() == 200) {
-            return execute.body()!!
+            return execute.body()!!.sortedBy { it.name }
         } else {
             throw RuntimeException("Network Error: ${execute.code()}, ${execute.message()}")
         }
