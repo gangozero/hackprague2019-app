@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import com.gangozero.prague.app.R
+import com.gangozero.prague.app.core.App
 import com.gangozero.prague.app.core.NotificationUtils
 
 class BleDeviceService : Service() {
@@ -20,7 +21,9 @@ class BleDeviceService : Service() {
                 this
         )
 
-        BleConnection(this).init()
+        val bleConnection = BleConnection(this)
+        (applicationContext as App).bleConnection = bleConnection
+        bleConnection.init()
     }
 
     override fun onBind(intent: Intent?): IBinder? {

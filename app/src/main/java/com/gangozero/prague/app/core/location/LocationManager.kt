@@ -16,6 +16,7 @@ class LocationManager(
 
     var locClient: FusedLocationProviderClient? = null
     var lastLocation: Location? = null
+    var listener: ((loc: Location) -> Unit)? = null
 
     fun init() {
 
@@ -28,6 +29,14 @@ class LocationManager(
         }
 
         initLocationRequest()
+    }
+
+    fun addListener(listener: (loc: Location) -> Unit) {
+        this.listener = listener
+    }
+
+    fun removeListener() {
+        this.listener = null
     }
 
     @SuppressLint("MissingPermission")
@@ -44,6 +53,8 @@ class LocationManager(
                 if (locationResult.locations.isNotEmpty()) {
                     lastLocation = locationResult.locations[0]
                     Log.d("loc", locationResult.locations[0].toString())
+
+                    listener?.invoke(lastLocation!!)
                 }
             }
         }

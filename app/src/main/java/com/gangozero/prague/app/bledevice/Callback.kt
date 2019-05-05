@@ -22,6 +22,8 @@ class Callback(
     var subToB = false
 
     override fun onScanFailed(errorCode: Int) {
+        if (!connected) return
+        connection.onRestartRequired()
         Log.d("gatt", "scan failed: $errorCode")
     }
 
@@ -102,6 +104,7 @@ class Callback(
                     Log.d("gatt", "sub to B")
                     val setCharResultB = setCharacteristicNotification(BUTTON_SERVICE, BUTTON_SERVICE_CHAR_B, gatt, true)
                     Log.d("gatt", "set char result - b: $setCharResultB")
+                    connection.onConnected()
                 }
             }
 

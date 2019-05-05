@@ -12,18 +12,37 @@ class BleConnection(
 ) {
 
     var callback: Callback? = null
+    var state = State.Scanning
+    val app: App = context.applicationContext as App
 
     fun init() {
         startScan()
     }
 
-    fun startScan() {
+    private fun startScan() {
+
+        state = State.Scanning
+
+        app.bleDeviceListener?.onScanning()
+
         Log.d("gatt", "start scan...")
         callback = Callback(context, this)
         BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner.startScan(callback)
     }
 
+    fun onRestartRequired() {
+        state = State.RestartRequired
+        app.bleDeviceListener?.onRestartDeviceRequired()
+    }
+
+    fun onConnected() {
+        state = State.Connected
+        app.bleDeviceListener?.onConnected()
+    }
+
     fun onDisconnected() {
+        state = State.Disconnected
+        app.bleDeviceListener?.onDisconnected()
         if (callback != null) {
             BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner.stopScan(callback)
         }
@@ -31,6 +50,8 @@ class BleConnection(
     }
 
     fun submit(like: Boolean) {
+
+        app.bleDeviceListener?.onLike(like)
 
         val createSubmitGrade = (context.applicationContext as App).createSubmitGrade()
         val schedulers = Schedulers()
@@ -43,6 +64,10 @@ class BleConnection(
                 }, {
                     it.printStackTrace()
                 })
+    }
+
+    enum class State {
+        Scanning, Connected, Disconnected, RestartRequired
     }
 
 
